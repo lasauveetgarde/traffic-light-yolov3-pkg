@@ -1,9 +1,8 @@
-#!/home/katya/agv_ws/src/traffic-light-yolov3-pkg/.venv/bin/python 
+#!/home/blackwidow/catkin_ws/src/traffic-light-yolov3-pkg/.venv/bin/python 
 import argparse
 import rospy
 import rospkg
 from std_msgs.msg import Int8
-
 
 from models import *  
 from utils.datasets import *
@@ -24,13 +23,13 @@ def detect():
 
     imgsz = opt.img_size 
     out = opt.output
-    source = '0'
+    source = '8'
     # source = 'Traffic-Light-Detection-Using-YOLOv3/1.avi' 
 
     weights = PATH_TO_WEIGHTS
     half = opt.half
     view_img = opt.view_img
-    webcam = source == '0' 
+    webcam = source == '8' 
 
     # Initialize
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

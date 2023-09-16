@@ -5,7 +5,7 @@ import rospkg
 from std_msgs.msg import Int8
 
 
-from models import *  
+from model.scripts.models import *  
 from utils.datasets import *
 from utils.utils import *
 
@@ -20,13 +20,9 @@ def detect():
     PATH_TO_WEIGHTS=f"{rospack.get_path('traffic-light-yolov3-pkg')}/model/weights/best_model_12.pt"
     ##ROS SECTION END##
 
-
-
     imgsz = opt.img_size 
     out = opt.output
     source = '0'
-    # source = 'Traffic-Light-Detection-Using-YOLOv3/1.avi' 
-
     weights = PATH_TO_WEIGHTS
     half = opt.half
     view_img = opt.view_img
@@ -80,19 +76,20 @@ def detect():
 
     # t0 = time.time()
     img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
+
     _ = model(img.half() if half else img.float()) if device.type != 'cpu' else None  # run once
-    # for path, img, im0s, vid_cap, frame, nframes in dataset:
+    # for [path, img, im0s, vid_cap, frame, nframes] in dataset:
     for [path, img, im0s, vid_cap] in dataset:
+        # view_img = True
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-
         # Inference
-        # t1 = torch_utils.time_synchronized()
+        t1 = torch_utils.time_synchronized()
         pred = model(img, augment=opt.augment)[0]
-        # t2 = torch_utils.time_synchronized()
+        t2 = torch_utils.time_synchronized()
 
         # to float
         if half:
@@ -112,11 +109,11 @@ def detect():
                 p, s, im0 = path[i], '%g: ' % i, im0s[i].copy()
             else:
                 p, s, im0 = path, '', im0s
-
             s += '%gx%g ' % img.shape[2:] 
-            # gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  #  normalization gain whwh
+
+            gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  #  normalization gain whwh
             if det is not None and len(det):
-                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+                # det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
                 # Write results
                 for *xyxy, conf, cls in det:
@@ -127,18 +124,19 @@ def detect():
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
                         rospy.loginfo(result)
                         pub.publish(result)
+
             fps_counter+=1
             if time.time() - last_time > 1:
                 last_time = time.time()
                 fps_counter=0
 
             # Stream results
-            if view_img:
-                cv2.imshow(p, im0)
+            if view_img == True:
+                cv2.imshow('window', im0)
+                # print(type(im0),im0)
             if rospy.is_shutdown():
                 cv2.destroyAllWindows()
                 raise StopIteration
-                # exit(0)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -153,7 +151,7 @@ if __name__ == '__main__':
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
     parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
-    parser.add_argument('--view-img', action='store_true', help='display results')
+    parser.add_argument('--view-img', action='store_true', default = 'true', help='display results')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')

@@ -139,6 +139,7 @@ outputs/*.mp4
 weights/*.pt
 commands.txt
 training_tracker.xlsx
+model/signs
 
 # data files
 *.csv
@@ -146,3 +147,7 @@ training_tracker.xlsx
 *.pkl
 *.pth
 *.pt
+
+subclassifier_3.24_3.25_archive
+encoder_archive
+detector_archive

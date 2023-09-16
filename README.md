@@ -1,26 +1,35 @@
-# traffic-light-yolov3-pkg
-ROS package for traffic light detection
+# ADAS System
 
-## Работа с venv
-Для запуска узлов в виртуальной среде необходимо в первой строке скриптов изменить shebang, чтобы она указывала на интерпретатор Python виртуальной среды: `#!/path/to/venv/bin/python3`.
+- [Содержание репозитория](#содержание-репозитория)
+- [Клонирование репоизтория](#клонирование-репоизтория)
+- [Как начать разработку](#как-начать-разработку)
 
-Для более гибкого решения можно устанавливать виртуальную среду из лаунча следующим способом:
+## Содержание репозитория
 
-``` 
-<arg name="venv" value="/path/to/venv/bin/python3" />
-<node> pkg="pkg" type="node.py" name="node" launch-prefix = "$(arg venv)" />
+- [maddrive_adas](maddrive_adas) - исходники пакета, внутри деление по решаемым задачам.
+- [notebooks](notebooks) - ноутбуки для research и проверки кода, внутри делится по задачам.
+- [tests](tests) - тесты пакета, запускаются командой `make tests`
+
+## Установка пакета в виртуальное окружение
+
+> Для начала рекомендуется настроить виртуальное окружение командой `python3.8 -m venv venv38` и активировать `source ./venv38/bin/activate`.
+
+Установка выполняется командой `pip install git+https://github.com/lsd-maddrive/adas_system#egg=maddrive-adas`
+
+## Клонирование репоизтория
+
+> Если у вас в системене установлен [Git LFS](https://git-lfs.github.com/), то рекомендуем, большие файлы там хранятся.
+
+```bash
+git clone https://github.com/lsd-maddrive/adas_system
 ```
 
-Если при запуске появляется ошибка 
+## Как начать разработку
 
-`ModuleNotFoundError: No module named "rospkg"`
-
-Необходимо в вирутальную среду установить rospkg, для этого:
-1) Активируем venv
-2) pip install rospkg
+Читай в инфе [DEVELOPMENT.md](DEVELOPMENT.md)
 
 
-## Полезное
-
-Перенос венва
-https://dev.to/geekypandey/copy-venv-from-one-folder-to-another-and-still-be-able-to-use-it-3m49
+## Как использовать:
+* Выкачать веса используя `download_models.py`;
+* Рассмотреть ноутбуки в `SignDetectorAndClassifier\notebooks`: `DetectorVideoTest` и `COMPOSER`;
+* Если нет бинарей `tesseract-ocr`, передавайте `ignore_tesseract=False` в конструктор `EncoderBasedClassifier`;

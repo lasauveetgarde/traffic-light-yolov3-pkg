@@ -1,7 +1,6 @@
 import argparse
 
-
-from models import *  
+from scripts.models import *  
 from utils.datasets import *
 from utils.utils import *
 
@@ -9,13 +8,13 @@ from utils.utils import *
 def detect():
     imgsz = opt.img_size 
     out = opt.output
-    source = '0'
-    # source = 'Traffic-Light-Detection-Using-YOLOv3/1.avi' 
-
-    weights = 'Traffic-Light-Detection-Using-YOLOv3/weights/best_model_12.pt'
+    # source = '6'
+    # source = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/model/v10.mp4' 
+    source = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/traffic_light1.avi' 
+    weights = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/model/weights/best_model_12.pt'
     half = opt.half
     view_img = opt.view_img
-    webcam = source == '0' 
+    webcam = source == '6' 
 
     # Initialize
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -47,6 +46,7 @@ def detect():
         model.half()
 
     # Set Dataloader
+    vid_path, vid_writer = None, None
     if webcam:
         view_img = True # default True
         torch.backends.cudnn.benchmark = True  # set True to speed up constant image size inference
@@ -66,8 +66,8 @@ def detect():
     # t0 = time.time()
     img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
     _ = model(img.half() if half else img.float()) if device.type != 'cpu' else None  # run once
-    # for path, img, im0s, vid_cap, frame, nframes in dataset:
-    for [path, img, im0s, vid_cap] in dataset:
+    for path, img, im0s, vid_cap, frame, nframes in dataset:
+    # for [path, img, im0s, vid_cap] in dataset:
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -75,9 +75,9 @@ def detect():
             img = img.unsqueeze(0)
 
         # Inference
-        # t1 = torch_utils.time_synchronized()
+        t1 = torch_utils.time_synchronized()
         pred = model(img, augment=opt.augment)[0]
-        # t2 = torch_utils.time_synchronized()
+        t2 = torch_utils.time_synchronized()
 
         # to float
         if half:

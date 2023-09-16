@@ -18,8 +18,7 @@ from utils.utils import xyxy2xywh, xywh2xyxy
 
 help_url = 'https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data'
 img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif', '.dng']
-vid_formats = ['.mov', '.avi', '.mp4', '.mpg', '.mpeg', '.m4v', '.wmv', '.mkv', '.mjpg', 
-               '.MJPG']
+vid_formats = ['.mov', '.avi', '.mp4', '.mpg', '.mpeg', '.m4v', '.wmv', '.mkv']
 
 # Get orientation exif tag
 for orientation in ExifTags.TAGS.keys():
@@ -203,7 +202,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
         for i, s in enumerate(sources):
             # Start the thread to read frames from the video stream
             print('%g/%g: %s... ' % (i + 1, n, s), end='')
-            cap = cv2.VideoCapture(4 if s == '4' else 0)
+            cap = cv2.VideoCapture(0 if s == '0' else s)
             assert cap.isOpened(), 'Failed to open %s' % s
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -257,8 +256,6 @@ class LoadStreams:  # multiple IP or RTSP cameras
 
     def __len__(self):
         return 0  # 1E12 frames = 32 streams at 30 FPS for 30 years
-    
-    
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing

@@ -140,6 +140,7 @@ weights/*.pt
 commands.txt
 training_tracker.xlsx
 model/signs
+signs/
 
 # data files
 *.csv

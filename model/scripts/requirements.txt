@@ -9,7 +9,7 @@ torchvision -f https://download.pytorch.org/whl/torch_stable.html
 torch -f https://download.pytorch.org/whl/torch_stable.html
 scipy
 tqdm
-git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
+#git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
 
 # Conda commands (in lieu of pip) ---------------------------------------------
 # conda update -yn base -c defaults conda

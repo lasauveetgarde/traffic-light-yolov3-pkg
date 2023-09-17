@@ -18,7 +18,7 @@ CLASSIFIER_ARCHIVE = PROJECT_ROOT /'encoder_archive'
 SUBCLASSIFIER_ARCHIVE = PROJECT_ROOT /'subclassifier_3.24_3.25_archive'
 SIGNS_ROOT='/home/katya/agv_ws/src/traffic-light-yolov3-pkg/model/signs/'
 
-VIDEO_PATH = str(PROJECT_ROOT /'traffic_light1-2.avi')
+VIDEO_PATH = str(PROJECT_ROOT /'test_video/person1.avi')
 
 c: AbstractSignClassifier = EncoderBasedClassifier(
     config_path=str(CLASSIFIER_ARCHIVE),
@@ -35,8 +35,8 @@ composer: AbstractComposer = BasicSignsDetectorAndClassifier(
 ) 
 from IPython.display import display,Image
 
-# video = cv2.VideoCapture(VIDEO_PATH)
-video = cv2.VideoCapture(0)
+video = cv2.VideoCapture(VIDEO_PATH)
+# video = cv2.VideoCapture(0)
 
 display_handle1=display(1, display_id=True)
 # TODO: plot detector confidences
@@ -48,6 +48,7 @@ i=1
 areas=[]
 lst_frame_src_array = []
 signs_array = []
+sign_detected = False
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -102,16 +103,39 @@ while (video.isOpened()):
         frame_src = cv2.drawContours(
                 frame_src, lst_frame_src_array, index_area, COLOR, 3
             )
-        # print(index_area)
-
-        # print(signs_array[index_area])
-        if signs_array[index_area] == []:   
+        if signs_array[index_area] == []:
+            sign_detected = False
             pass
         else:
             str_index = str(signs_array[index_area])
             print(str_index, type(str_index))
             new_index = str_index.replace(".", "_", 2)
             new_index=new_index+".png"
+            if str_index == '5.19.1':
+                x=int(lst_frame_src_array[0][0][0][0])-500
+                print(x)
+                y=int(lst_frame_src_array[0][0][0][1])
+                h = 400
+                w = 500
+                # frame_src = cv2.rectangle(frame_src, (x-300,y), (x,y+400), (255,0,0), 3)
+                cropped_frame = frame_src[y:y+h, x:x+w]
+                cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)   
+
+                # cv2.imshow("cropped frame", cropped_frame)
+
+                hsv = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2HSV)
+                lower_blue = np.array([100,150,0])
+                upper_blue = np.array([140,255,255])
+                mask = cv2.inRange(hsv, lower_blue, upper_blue)
+                cropped_frame = cv2.bitwise_and(cropped_frame,cropped_frame, mask= mask)
+                print(type(mask))
+                if np.any(mask):
+                    print('person detected!')
+                    frame_src = cv2.putText(frame_src, 'PERSON DETECTED', (100,200), font, 5 , (255,0,0), 4, cv2.LINE_AA)
+                # cv2.imshow("cropped blue frame", cropped_frame)
+            else:
+                pass
+
             if os.path.exists(SIGNS_ROOT+new_index):
                 img = cv2.imread(SIGNS_ROOT+new_index, cv2.IMREAD_COLOR)
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -124,9 +148,11 @@ while (video.isOpened()):
                 roi += logo
             else:
                  pass
+            
         # transform to 
         
     frame_src = cv2.cvtColor(frame_src, cv2.COLOR_RGB2BGR)
+    frame_src=cv2.resize(frame_src,(640,480))
     cv2.imshow('1', frame_src)
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     if cv2.waitKey(1) & 0xFF == ord('q'):

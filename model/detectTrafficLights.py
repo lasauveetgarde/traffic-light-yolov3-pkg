@@ -8,16 +8,14 @@ from utils.utils import *
 def detect():
     imgsz = opt.img_size 
     out = opt.output
-    # source = '6'
-    # source = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/model/v10.mp4' 
-    source = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/traffic_light1.avi' 
+    source = '0'
     weights = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/model/weights/best_model_12.pt'
     half = opt.half
     view_img = opt.view_img
-    webcam = source == '6' 
+    webcam = source == '0' 
 
     # Initialize
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cpu')
     os.makedirs(out, exist_ok=True)  # make new output folder
 
     # Initialize model
@@ -66,8 +64,8 @@ def detect():
     # t0 = time.time()
     img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
     _ = model(img.half() if half else img.float()) if device.type != 'cpu' else None  # run once
-    for path, img, im0s, vid_cap, frame, nframes in dataset:
-    # for [path, img, im0s, vid_cap] in dataset:
+    # for path, img, im0s, vid_cap, frame, nframes in dataset:
+    for [path, img, im0s, vid_cap] in dataset:
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0

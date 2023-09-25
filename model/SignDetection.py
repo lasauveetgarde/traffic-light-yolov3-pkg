@@ -56,11 +56,9 @@ while (video.isOpened()):
     # save initial timeq
     t0 = now()
     # get video frame
-    ret1, frame = video.read()
-    ret2, frame_src = video.read()
+    _, frame = video.read()
 
-    ret, frame_sc = video.read()
-    frame_sc = frame_src
+    frame_sc = frame_src = frame
     cimg = frame_sc
     hsv = cv2.cvtColor(frame_sc, cv2.COLOR_BGR2HSV)
 
@@ -89,12 +87,6 @@ while (video.isOpened()):
 
     if len(signs_array) == 0:
          pass
-            # frame_src = cv2.putText(frame_src, 'NOTHING', 
-            #     (100,200),
-            #     cv2.FONT_HERSHEY_SIMPLEX,
-            #     4, (255, 255, 255),
-            #     20, cv2.LINE_AA
-            #         )
 
     elif max_area <= 1800:
         pass
@@ -112,7 +104,7 @@ while (video.isOpened()):
             new_index = str_index.replace(".", "_", 2)
             new_index=new_index+".png"
             if str_index == '5.19.1':
-                x=int(lst_frame_src_array[0][0][0][0])-500
+                x=int(lst_frame_src_array[0][0][0][0])-300
                 print(x)
                 y=int(lst_frame_src_array[0][0][0][1])
                 h = 400

@@ -19,7 +19,7 @@ now = datetime.datetime.now
 import pathlib
 import os
 
-PROJECT_ROOT = pathlib.Path('/home/katya/agv_ws/src/traffic-light-yolov3-pkg/')    
+PROJECT_ROOT = pathlib.Path('/home/blackwidow/catkin_ws/src/traffic-light-yolov3-pkg/')    
 DETECTOR_ARCHIVE = PROJECT_ROOT /'detector_archive'
 CLASSIFIER_ARCHIVE = PROJECT_ROOT /'encoder_archive'
 SUBCLASSIFIER_ARCHIVE = PROJECT_ROOT /'subclassifier_3.24_3.25_archive'
@@ -43,7 +43,7 @@ composer: AbstractComposer = BasicSignsDetectorAndClassifier(
 from IPython.display import display,Image
 
 # video = cv2.VideoCapture(VIDEO_PATH)
-video = cv2.VideoCapture(0)
+video = cv2.VideoCapture(8)
 video_w = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
 video_h = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -66,86 +66,91 @@ def sign_detection():
     signs_array = []
     sign_detected = False
 
-    _, frame = video.read()
-    frame_sc = frame_src = frame
-    cimg = frame_sc
+    ret, frame_src = video.read()
+    #  = frame_src = frame
+    # cimg = frame_sc
     # hsv = cv2.cvtColor(frame_sc, cv2.COLOR_BGR2HSV)
-    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)   
-    frame_src = cv2.cvtColor(frame_src, cv2.COLOR_BGR2RGB)   
-    detected_instance, predicted_signs = composer.detect_and_classify(frame_src) 
+    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  
+    if frame_src is not None:
+        frame_src = cv2.cvtColor(frame_src, cv2.COLOR_BGR2RGB)
+        size = frame_src.shape
+        if size is not None:
+            detected_instance, predicted_signs = composer.detect_and_classify(frame_src) 
 
-    size = frame_sc.shape
+            for idx, sign in enumerate(predicted_signs):
+            
+                COORD_ARR, conf = detected_instance.get_abs_roi(idx)
+                frame_src_array = np.array([[[COORD_ARR[0],COORD_ARR[1]]],
+                        [[COORD_ARR[0],COORD_ARR[3]]],
+                        [[COORD_ARR[2],COORD_ARR[3]]],
+                        [[COORD_ARR[2],COORD_ARR[1]]]])
 
-    for idx, sign in enumerate(predicted_signs):
-    
-        COORD_ARR, conf = detected_instance.get_abs_roi(idx)
-        frame_src_array = np.array([[[COORD_ARR[0],COORD_ARR[1]]],
-                [[COORD_ARR[0],COORD_ARR[3]]],
-                [[COORD_ARR[2],COORD_ARR[3]]],
-                [[COORD_ARR[2],COORD_ARR[1]]]])
+                lst_frame_src_array.append(frame_src_array)
 
-        lst_frame_src_array.append(frame_src_array)
+                area=cv2.contourArea(frame_src_array)
+                areas.append(area)
+                signs_array.append(sign[0])
+                max_area= max(areas)
+                index_area = areas.index(max_area)
 
-        area=cv2.contourArea(frame_src_array)
-        areas.append(area)
-        signs_array.append(sign[0])
-        max_area= max(areas)
-        index_area = areas.index(max_area)
+                if len(signs_array) == 0:
+                    pass
 
-        if len(signs_array) == 0:
-            pass
-
-        elif max_area <= 1800:
-            pass
-        
-        else:
-            frame_src = cv2.drawContours(
-                    frame_src, lst_frame_src_array, index_area, COLOR, 3
-                )
-            if signs_array[index_area] == []:
-                sign_detected = False
-                pass
-            else:
-                str_index = str(signs_array[index_area])
-                new_index = str_index.replace(".", "_", 2)
-                new_index=new_index+".png"
-                if str_index == '5.19.1':
-
-                    x=int(lst_frame_src_array[0][0][0][0])-300
-                    y=int(lst_frame_src_array[0][0][0][1])
-                    h = 400
-                    w = 500
-                    cropped_frame = frame_src[y:y+h, x:x+w]
-
-                    print(x,y)
-                    if (x > 0) and (y > 0):
-                        cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)   
-                        hsv = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2HSV)
-                        lower_blue = np.array([100,150,0])
-                        upper_blue = np.array([140,255,255])
-                        mask = cv2.inRange(hsv, lower_blue, upper_blue)
-                        cropped_frame = cv2.bitwise_and(cropped_frame,cropped_frame, mask= mask)
-
-                        if np.any(mask):
-                            putText_w=int(video_w/6)
-                            putText_h=int(video_h/4)
-                            frame_src = cv2.putText(frame_src, 'PERSON DETECTED',(putText_w,putText_h), font, 2 , (255,0,0), 4, cv2.LINE_AA)
-                        else:
-                            pass
-
-                    else:
+                elif max_area <= 1800:
+                    pass
+                
+                else:
+                    frame_src = cv2.drawContours(
+                            frame_src, lst_frame_src_array, index_area, COLOR, 3
+                        )
+                    if signs_array[index_area] == []:
+                        sign_detected = False
                         pass
-        
-    frame_src = cv2.cvtColor(frame_src, cv2.COLOR_RGB2BGR)
-    # frame_src=cv2.resize(frame_src,(640,480))
-    cv2.imshow('SIGNS', frame_src)
+                    else:
+                        str_index = str(signs_array[index_area])
+                        new_index = str_index.replace(".", "_", 2)
+                        new_index=new_index+".png"
+                        if str_index == '5.19.1':
+
+                            x=int(lst_frame_src_array[0][0][0][0])-300
+                            y=int(lst_frame_src_array[0][0][0][1])
+                            h = 400
+                            w = 500
+                            cropped_frame = frame_src[y:y+h, x:x+w]
+
+                            print(x,y)
+                            if (x > 0) and (y > 0):
+                                cropped_frame = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)   
+                                hsv = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2HSV)
+                                lower_blue = np.array([100,150,0])
+                                upper_blue = np.array([140,255,255])
+                                mask = cv2.inRange(hsv, lower_blue, upper_blue)
+                                cropped_frame = cv2.bitwise_and(cropped_frame,cropped_frame, mask= mask)
+
+                                if np.any(mask):
+                                    putText_w=int(video_w/6)
+                                    putText_h=int(video_h/4)
+                                    frame_src = cv2.putText(frame_src, 'PERSON DETECTED',(putText_w,putText_h), font, 2 , (255,0,0), 4, cv2.LINE_AA)
+                                else:
+                                    pass
+
+                            else:
+                                pass
+                
+            frame_src = cv2.cvtColor(frame_src, cv2.COLOR_RGB2BGR)
+            # frame_src=cv2.resize(frame_src,(640,480))
+            cv2.imshow('SIGNS', frame_src)
+        else:
+            pass     
+    else:
+        pass
 
 def detect_all():
     while (video.isOpened()):
         imgsz = opt.img_size 
         out = opt.output
         source = '0'
-        weights = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/model/weights/best_model_12.pt'
+        weights = '/home/blackwidow/catkin_ws/src/traffic-light-yolov3-pkg/model/weights/best_model_12.pt'
         half = opt.half
         view_img = opt.view_img
         webcam = source == '0' 
@@ -279,5 +284,6 @@ if __name__ == '__main__':
     print(opt)
 
     with torch.no_grad():
-        detect_all()  
+        detect_all()
+        
         

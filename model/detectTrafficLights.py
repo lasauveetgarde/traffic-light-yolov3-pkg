@@ -9,10 +9,11 @@ def detect():
     imgsz = opt.img_size 
     out = opt.output
     source = '0'
-    weights = '/home/katya/agv_ws/src/traffic-light-yolov3-pkg/model/weights/best_model_12.pt'
+    weights = '/home/blackwidow/catkin_ws/src/traffic-light-yolov3-pkg/model/weights/best_model_12.pt'
     half = opt.half
     view_img = opt.view_img
     webcam = source == '0' 
+    
 
     # Initialize
     device = torch.device('cpu')

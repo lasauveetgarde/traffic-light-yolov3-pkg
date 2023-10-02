@@ -10,7 +10,7 @@ for i in range(100):
 print(str(FindCam))
 
 # define a video capture object
-vid = cv2.VideoCapture(8)
+vid = cv2.VideoCapture(0)
   
 while(True):
       
